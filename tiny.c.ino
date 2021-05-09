@@ -122,7 +122,7 @@ void senddh()
 
   // send packet
   type = 1;
-  Curve25519::dh2(k, f);
+  Curve25519::dh1(k, f);
   packet.clear();
   packet.put(type);
   for (int i = 0; i < k.size; i++)
