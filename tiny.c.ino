@@ -149,6 +149,8 @@ void receivePayload()
         String jsonString = packet.getString();
         DeserializationError error = deserializeJson(payload, jsonString);
         encrypt
+        k=response;
+        Curve25519::dh2(k, f);
       
         String password = AES128::decrypt(payload["Pass"],k);
         bool found = true;
