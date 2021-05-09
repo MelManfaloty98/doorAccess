@@ -131,6 +131,8 @@ void receiveDoorAccess()
       packet.getByte();
       String jsonString=packet.getString();
       DeserializationError error = deserializeJson(res, jsonString);
+      k=response;
+      Curve25519::dh2(k, f);
       Serial.print(AES128::decrypt(res["GRANTED"],k));
     }
     phase = 4;

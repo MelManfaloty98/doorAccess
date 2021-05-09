@@ -122,7 +122,7 @@ void senddh()
 
   // send packet
   type = 1;
-  Curve25519::dh2(k, f);
+  Curve25519::dh1(k, f);
   packet.clear();
   packet.put(type);
   for (int i = 0; i < k.size; i++)
@@ -149,6 +149,8 @@ void receivePayload()
         String jsonString = packet.getString();
         DeserializationError error = deserializeJson(payload, jsonString);
         encrypt
+        k=response;
+        Curve25519::dh2(k, f);
       
         String password = AES128::decrypt(payload["Pass"],k);
         bool found = true;
