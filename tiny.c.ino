@@ -107,13 +107,13 @@ void sendAccess()
 
   char[] jsonString = "{\"GRANTED\":true + ,\"LOCKTIME\":0, \"TIMECODE\"" + millis() + "}"; // use strcat if errors
 
-  DeserializationError error = deserializeJson(payload, json);
+  DeserializationError error = deserializeJson(payload, jsonString);
   packet.clear();
   type = 3;
   packet.put(type);
-  String jsonString;
-  serializeJson(payload,jsonString)
-  packet.put(AES128::encrypt(jsonString,response) //encrypting AES128 with key from server
+  String jsonStringRes;
+  serializeJson(payload,jsonStringRes)
+  packet.put(AES128::encrypt(jsonStringRes,response) //encrypting AES128 with key from server
   phase=4;
 }
 
@@ -148,7 +148,9 @@ void receivePayload()
       { // DH Response code
         String jsonString = packet.getString();
         DeserializationError error = deserializeJson(payload, jsonString);
-        String password = payload["Pass"];
+        encrypt
+      
+        String password = AES128::decrypt(payload["Pass"],k);
         bool found = true;
         for (int i = 0; i < codes.size; i++)
         {
