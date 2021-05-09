@@ -21,11 +21,13 @@ AES128 aes128;
 char input_password[64];
 StaticJsonDocument<200> doc;
 StaticJsonDocument<200> payload;
+StaticJsonDocument<200> res;
 
-uint8_t key[] size_t AES128::keySize() const
-{
-  return 16;
-}
+
+// uint8_t key[] size_t AES128::keySize() const
+// {
+//   return 16;
+// }
 
 byte output[16];
 String json_object;
@@ -73,7 +75,7 @@ String userinput;
 //   Serial.print(userinput);
 //   AESTiny128::encrypt(userinput, key);
 // }
-  
+
 void setup()
 {
 
@@ -88,11 +90,13 @@ void senddh1()
   Curve25519::dh1(k, f);
   packet.clear();
   packet.put(type);
-  for (int i=0;i<k.size;i++){
+  for (int i = 0; i < k.size; i++)
+  {
     packet.put(k[i]);
   }
-  
+
   proto.write(packet);
+  phase = 1;
 }
 
 void loop()
@@ -106,62 +110,68 @@ void loop()
   {
     receivedhResponse()
   }
-  else if(phase==2){
+  else if (phase == 2)
+  {
     sendPassword()
   }
-  else if (phase==3)
+  else if (phase == 3)
   {
-    
+    receiveDoorAccess();
   }
-  
 }
 
-void receiveDoorAccess(){
-   if (Serial1.available())
+void receiveDoorAccess()
+{
+  if (Serial1.available())
   {
+    packet.clear();
     int len = proto.read(packet);
     if (len > 0)
     {
       packet.getByte();
-     Serial.print(packet.getString());
+      String jsonString=packet.getString();
+      DeserializationError error = deserializeJson(res, jsonString);
+      Serial.print(AES128::decrypt(res["GRANTED"],k));
     }
-     phase=4;
+    phase = 4;
   }
 }
 
 // Loop to get input password from user
-void sendPassword(){
+void sendPassword()
+{
   char json[] =
-            "{\"Pass\":"+input_password+",\"TIMECODE\":"+millis()+"}"   // use strcat if errors
-  
+      "{\"Pass\":" + input_password + ",\"TIMECODE\":" + millis() + "}"; // use strcat if errors
+
   DeserializationError error = deserializeJson(payload, json);
-  packet.clear()
-  type=2;
+  packet.clear();
+  type = 2;
   packet.put(type);
   String jsonString;
   serializeJson(payload,jsonString)
-  packet.put( AES128::encrypt(jsonString))
+  packet.put(AES128::encrypt(jsonString,response) //encrypting AES128 with key from server
   phase=3;
-  }
+}
 
 void receivedhResponse()
 {
   if (Serial1.available())
   {
+    packet.clear();
     int len = proto.read(packet);
     if (len > 0)
     {
-      if(packet.getbyte()==1){ // DH Response code 
+      phase = 2;
+      if (packet.getbyte() == 1)
+      { // DH Response code
 
-        for (int i=0;i<32;i++){
-          response[i]=packet.getByte();
+        for (int i = 0; i < 32; i++)
+        {
+          response[i] = packet.getByte();
         }
-        
       }
     }
-     phase=2;
   }
- 
 }
 
 void get_password()
